@@ -12,6 +12,10 @@
     "multistep": {
       "path": "./graphs/multi-step-graph.js:buildMultiStepGraph",
       "description": "Multi-step graph with cycles for iterative workflows"
+    },
+    "conversation": {
+      "path": "./graphs/conversation-graph.js:buildConversationGraph",
+      "description": "Conversation graph with persistence and checkpointing"
     }
   },
   "env": ".env"
