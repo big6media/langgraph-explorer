@@ -1,0 +1,18 @@
+{
+  "$schema": "https://langchain-ai.github.io/langgraph/schemas/langgraph.schema.json",
+  "graphs": {
+    "simple": {
+      "path": "./graphs/simple-graph.js:buildSimpleGraph",
+      "description": "Simple sequential graph demonstrating basic node connections"
+    },
+    "agent": {
+      "path": "./graphs/agent-graph.js:buildAgentGraph", 
+      "description": "Agent graph with conditional routing based on intent"
+    },
+    "multistep": {
+      "path": "./graphs/multi-step-graph.js:buildMultiStepGraph",
+      "description": "Multi-step graph with cycles for iterative workflows"
+    }
+  },
+  "env": ".env"
+}

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LangGraph Explorer</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --bg-card: #0f3460;
+      --accent: #e94560;
+      --accent-secondary: #533483;
+      --text-primary: #eaeaea;
+      --text-secondary: #a0a0a0;
+      --success: #4ade80;
+      --border-radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-secondary);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-secondary);
+      border: none;
+      border-radius: var(--border-radius);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .tab:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .panel {
+      display: none;
+      background: var(--bg-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .panel-header {
+      margin-bottom: 1rem;
+    }
+
+    .panel-header h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .panel-header p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .panel-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .panel-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .input-section, .diagram-section {
+      background: var(--bg-primary);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+    }
+
+    .diagram-section h3 {
+      margin-bottom: 1rem;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .diagram-container {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .diagram-container svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--bg-card);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      padding: 0.75rem 2rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result h4 {
+      margin-bottom: 0.75rem;
+      color: var(--success);
+      font-size: 0.95rem;
+    }
+
+    .result-item {
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .result-item strong {
+      color: var(--accent);
+    }
+
+    .steps-list {
+      list-style: none;
+      margin-top: 0.5rem;
+    }
+
+    .steps-list li {
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--bg-primary);
+      color: var(--text-secondary);
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+
+    .steps-list li:last-child {
+      border-bottom: none;
+    }
+
+    .error {
+      color: var(--accent);
+      padding: 1rem;
+      background: rgba(233, 69, 96, 0.1);
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .examples {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+    }
+
+    .examples h4 {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    .example-btn {
+      padding: 0.4rem 0.8rem;
+      background: var(--bg-secondary);
+      border: none;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .example-btn:hover {
+      background: var(--accent-secondary);
+      color: white;
+    }
+
+    .diagram-loading {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Chat styles */
+    .thread-selector {
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .thread-selector label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .chat-container {
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 1rem;
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+    }
+
+    .chat-welcome {
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 2rem;
+      font-style: italic;
+    }
+
+    .chat-message {
+      margin-bottom: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      max-width: 85%;
+    }
+
+    .chat-message.user {
+      background: var(--accent);
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .chat-message.assistant {
+      background: var(--bg-secondary);
+      margin-right: auto;
+    }
+
+    .chat-message .meta {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .chat-input-row input {
+      flex: 1;
+    }
+
+    .chat-input-row .btn {
+      padding: 0.75rem 1.5rem;
+    }
+
+    .persistence-info {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .persistence-info h4 {
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .persistence-info ul {
+      list-style: none;
+      color: var(--text-secondary);
+    }
+
+    .persistence-info li {
+      padding: 0.25rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔗 LangGraph Explorer</h1>
+      <p>Explore LangGraph JS SDK capabilities through interactive examples</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-panel="simple">Simple Graph</button>
+      <button class="tab" data-panel="agent">Agent Graph</button>
+      <button class="tab" data-panel="multistep">Multi-Step Graph</button>
+      <button class="tab" data-panel="conversation">💾 Conversation (Persistence)</button>
+    </div>
+
+    <!-- Simple Graph Panel -->
+    <div class="panel active" id="simple">
+      <div class="panel-header">
+        <h2>Simple Sequential Graph</h2>
+        <p>Demonstrates basic LangGraph workflow: nodes connected in sequence with state management</p>
+      </div>
+      <div class="panel-content">
+        <div class="input-section">
+          <div class="input-group">
+            <label for="simple-input">Input text:</label>
+            <input type="text" id="simple-input" placeholder="Enter text to process..." value="Hello LangGraph!">
+          </div>
+          <button class="btn" onclick="runSimpleGraph()">Run Graph</button>
+          <div class="result" id="simple-result"></div>
+        </div>
+        <div class="diagram-section">
+          <h3>📊 Graph Visualization</h3>
+          <div class="diagram-container" id="simple-diagram">
+            <span class="diagram-loading">Loading diagram...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Graph Panel -->
+    <div class="panel" id="agent">
+      <div class="panel-header">
+        <h2>Agent Graph with Conditional Routing</h2>
+        <p>Demonstrates conditional edges and tool-like nodes that route based on intent</p>
+      </div>
+      <div class="panel-content">
+        <div class="input-section">
+          <div class="input-group">
+            <label for="agent-input">Your request:</label>
+            <input type="text" id="agent-input" placeholder="Ask about weather, math, or search..." value="What's the weather in Tokyo?">
+          </div>
+          <div class="examples">
+            <h4>Try these examples:</h4>
+            <button class="example-btn" onclick="setAgentInput('Calculate 15 * 7')">Calculator</button>
+            <button class="example-btn" onclick="setAgentInput('Weather in London')">Weather</button>
+            <button class="example-btn" onclick="setAgentInput('Search for LangGraph docs')">Search</button>
+            <button class="example-btn" onclick="setAgentInput('Hello, how are you?')">General</button>
+          </div>
+          <button class="btn" onclick="runAgentGraph()">Run Graph</button>
+          <div class="result" id="agent-result"></div>
+        </div>
+        <div class="diagram-section">
+          <h3>📊 Graph Visualization</h3>
+          <div class="diagram-container" id="agent-diagram">
+            <span class="diagram-loading">Loading diagram...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-Step Graph Panel -->
+    <div class="panel" id="multistep">
+      <div class="panel-header">
+        <h2>Multi-Step Graph with Cycles</h2>
+        <p>Demonstrates iterative workflows with cycles, state accumulation, and conditional termination</p>
+      </div>
+      <div class="panel-content">
+        <div class="input-section">
+          <div class="input-group">
+            <label for="multistep-input">Target value (will count up to this):</label>
+            <input type="text" id="multistep-input" placeholder="Enter a target number..." value="Count to 50">
+          </div>
+          <div class="input-group">
+            <label for="multistep-iterations">Max iterations:</label>
+            <input type="number" id="multistep-iterations" value="5" min="1" max="20">
+          </div>
+          <button class="btn" onclick="runMultiStepGraph()">Run Graph</button>
+          <div class="result" id="multistep-result"></div>
+        </div>
+        <div class="diagram-section">
+          <h3>📊 Graph Visualization</h3>
+          <div class="diagram-container" id="multistep-diagram">
+            <span class="diagram-loading">Loading diagram...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversation Graph Panel -->
+    <div class="panel" id="conversation">
+      <div class="panel-header">
+        <h2>Conversation Graph with Persistence</h2>
+        <p>Demonstrates stateful conversations with memory - messages persist across requests using checkpointing</p>
+      </div>
+      <div class="panel-content">
+        <div class="input-section">
+          <div class="thread-selector">
+            <label>Thread ID:</label>
+            <input type="text" id="thread-id" value="user-1" style="width: 150px; display: inline-block;">
+            <button class="example-btn" onclick="clearChat()">Clear Chat</button>
+          </div>
+          <div class="chat-container" id="chat-messages">
+            <div class="chat-welcome">Start a conversation! Try saying "hello" or ask "what did I say?" after a few messages.</div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
+            <button class="btn" onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+        <div class="diagram-section">
+          <h3>📊 Graph Visualization</h3>
+          <div class="diagram-container" id="conversation-diagram">
+            <span class="diagram-loading">Loading diagram...</span>
+          </div>
+          <div class="persistence-info">
+            <h4>🔄 How Persistence Works:</h4>
+            <ul>
+              <li><strong>thread_id</strong> - Isolates state per user/session</li>
+              <li><strong>Checkpointer</strong> - Saves state after each step</li>
+              <li><strong>Memory</strong> - Accumulates messages over time</li>
+              <li>Try changing Thread ID to start a new conversation!</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Mermaid
+    mermaid.initialize({ 
+      startOnLoad: false,
+      theme: 'neutral',
+      securityLevel: 'loose',
+      flowchart: { 
+        curve: 'linear',
+        htmlLabels: true,
+        useMaxWidth: true
+      }
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.panel).classList.add('active');
+      });
+    });
+
+    function setAgentInput(text) {
+      document.getElementById('agent-input').value = text;
+    }
+
+    // Load diagrams on page load
+    async function loadDiagrams() {
+      const diagrams = [
+        { endpoint: '/api/diagrams/simple', containerId: 'simple-diagram' },
+        { endpoint: '/api/diagrams/agent', containerId: 'agent-diagram' },
+        { endpoint: '/api/diagrams/multistep', containerId: 'multistep-diagram' },
+        { endpoint: '/api/diagrams/conversation', containerId: 'conversation-diagram' }
+      ];
+
+      for (const { endpoint, containerId } of diagrams) {
+        const container = document.getElementById(containerId);
+        try {
+          const response = await fetch(endpoint);
+          const data = await response.json();
+          if (data.success && data.diagram) {
+            // Create unique ID for each diagram
+            const diagramId = 'mermaid-' + containerId;
+            container.innerHTML = '';
+            
+            // Render using mermaid.render
+            const { svg } = await mermaid.render(diagramId, data.diagram);
+            container.innerHTML = svg;
+          } else {
+            container.innerHTML = `<span class="diagram-loading">No diagram data</span>`;
+          }
+        } catch (error) {
+          console.error(`Diagram error for ${containerId}:`, error);
+          container.innerHTML = `<span class="diagram-loading">Error: ${error.message}</span>`;
+        }
+      }
+    }
+
+    async function runSimpleGraph() {
+      const input = document.getElementById('simple-input').value;
+      const resultDiv = document.getElementById('simple-result');
+      const btn = document.querySelector('#simple .btn');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span>Running...';
+      resultDiv.classList.remove('show');
+
+      try {
+        const response = await fetch('/api/simple-graph', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          resultDiv.innerHTML = `
+            <h4>✓ Execution Complete</h4>
+            <div class="result-item"><strong>Input:</strong> ${data.result.originalInput}</div>
+            <div class="result-item"><strong>Processed:</strong> ${data.result.processed}</div>
+            <div class="result-item"><strong>Output:</strong> ${data.result.formatted}</div>
+            <ul class="steps-list">
+              ${data.result.steps.map(s => `<li>→ ${s}</li>`).join('')}
+            </ul>
+          `;
+        } else {
+          resultDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+
+      resultDiv.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = 'Run Graph';
+    }
+
+    async function runAgentGraph() {
+      const input = document.getElementById('agent-input').value;
+      const resultDiv = document.getElementById('agent-result');
+      const btn = document.querySelector('#agent .btn');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span>Running...';
+      resultDiv.classList.remove('show');
+
+      try {
+        const response = await fetch('/api/agent-graph', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          resultDiv.innerHTML = `
+            <h4>✓ Execution Complete</h4>
+            <div class="result-item"><strong>Input:</strong> ${data.result.input}</div>
+            <div class="result-item"><strong>Intent:</strong> ${data.result.detectedIntent}</div>
+            <div class="result-item"><strong>Result:</strong> ${data.result.result}</div>
+            <ul class="steps-list">
+              ${data.result.steps.map(s => `<li>→ ${s}</li>`).join('')}
+            </ul>
+          `;
+        } else {
+          resultDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+
+      resultDiv.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = 'Run Graph';
+    }
+
+    async function runMultiStepGraph() {
+      const input = document.getElementById('multistep-input').value;
+      const maxIterations = parseInt(document.getElementById('multistep-iterations').value);
+      const resultDiv = document.getElementById('multistep-result');
+      const btn = document.querySelector('#multistep .btn');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span>Running...';
+      resultDiv.classList.remove('show');
+
+      try {
+        const response = await fetch('/api/multi-step-graph', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input, maxIterations })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          const statusEmoji = data.result.status === 'completed' ? '✓' : '⚠';
+          resultDiv.innerHTML = `
+            <h4>${statusEmoji} Execution Complete</h4>
+            <div class="result-item"><strong>Target:</strong> ${data.result.targetValue}</div>
+            <div class="result-item"><strong>Final:</strong> ${data.result.finalValue}</div>
+            <div class="result-item"><strong>Iterations:</strong> ${data.result.iterations}/${data.result.maxIterations}</div>
+            <div class="result-item"><strong>Status:</strong> ${data.result.status}</div>
+            <ul class="steps-list">
+              ${data.result.history.map(s => `<li>→ ${s}</li>`).join('')}
+            </ul>
+          `;
+        } else {
+          resultDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+
+      resultDiv.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = 'Run Graph';
+    }
+
+    // Chat functions for conversation panel
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const threadId = document.getElementById('thread-id').value;
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      const chatContainer = document.getElementById('chat-messages');
+      
+      // Remove welcome message if present
+      const welcome = chatContainer.querySelector('.chat-welcome');
+      if (welcome) welcome.remove();
+      
+      // Add user message to UI
+      chatContainer.innerHTML += `
+        <div class="chat-message user">
+          ${message}
+          <div class="meta">You</div>
+        </div>
+      `;
+      
+      input.value = '';
+      input.disabled = true;
+      
+      try {
+        const response = await fetch('/api/conversation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input: message, threadId })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          chatContainer.innerHTML += `
+            <div class="chat-message assistant">
+              ${data.result.response}
+              <div class="meta">Assistant · Turn ${data.result.turnCount} · ${data.result.sentiment}</div>
+            </div>
+          `;
+        } else {
+          chatContainer.innerHTML += `
+            <div class="chat-message assistant">
+              Error: ${data.error}
+            </div>
+          `;
+        }
+      } catch (error) {
+        chatContainer.innerHTML += `
+          <div class="chat-message assistant">
+            Error: ${error.message}
+          </div>
+        `;
+      }
+      
+      input.disabled = false;
+      input.focus();
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function clearChat() {
+      const threadId = document.getElementById('thread-id').value;
+      
+      try {
+        await fetch('/api/conversation/clear', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ threadId })
+        });
+        
+        document.getElementById('chat-messages').innerHTML = `
+          <div class="chat-welcome">Conversation cleared! Start fresh.</div>
+        `;
+      } catch (error) {
+        alert('Failed to clear: ' + error.message);
+      }
+    }
+
+    // Load diagrams when page loads
+    document.addEventListener('DOMContentLoaded', loadDiagrams);
+  </script>
+</body>
+</html>
