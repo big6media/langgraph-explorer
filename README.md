@@ -37,37 +37,49 @@ This app demonstrates four key LangGraph concepts with interactive visualization
 ### Graph Visualizations
 Each graph includes interactive Mermaid diagrams showing the workflow structure.
 
-## Getting Started
+## Quick Start
+
+```bash
+# Clone and install
+git clone https://github.com/big6media/langgraph-explorer.git
+cd langgraph-explorer
+npm install
+
+# (Optional) Configure environment
+cp .env.example .env
+# Edit .env to add OPENAI_API_KEY if needed
+
+# Start the server
+npm start
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Prerequisites
 - Node.js 18+
 - npm
 
-### Installation
+## Documentation
+
+📚 **Comprehensive documentation is available in the `docs/` directory:**
+
+- **[API Documentation](docs/API.md)** - Complete API reference with examples
+- **[Architecture Guide](docs/ARCHITECTURE.md)** - Technical architecture and design patterns
+- **[Usage Examples](docs/EXAMPLES.md)** - Practical examples and integration guides
+
+### LangGraph Studio
+
+This project includes `langgraph.json` configuration for use with [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio):
 
 ```bash
-# Clone the repository
-git clone https://github.com/big6media/langgraph-explorer.git
-cd langgraph-explorer
+# Run with LangGraph CLI
+npx @langchain/langgraph-cli dev
 
-# Install dependencies
-npm install
-
-# Copy environment file (optional - for LLM-powered features)
-cp .env.example .env
+# Server runs at http://localhost:2024
+# Studio UI: https://smith.langchain.com/studio?baseUrl=http://localhost:2024
 ```
 
-### Running the App
-
-```bash
-# Start the server
-npm start
-
-# Or with auto-reload during development
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+**Note**: The JS CLI currently has limitations with TypeScript schema extraction for JavaScript files. The graphs work via API, but schema hints in Studio may not be available.
 
 ## Project Structure
 
@@ -81,9 +93,14 @@ langgraph-explorer/
 │   └── conversation-graph.js # Persistence/checkpointing example
 ├── public/
 │   └── index.html           # Web UI with Mermaid visualizations
+├── docs/
+│   ├── API.md               # Complete API documentation
+│   ├── ARCHITECTURE.md      # Technical architecture guide
+│   └── EXAMPLES.md          # Usage examples and tutorials
 ├── langgraph.json           # LangGraph Studio configuration
 ├── package.json
-└── .env.example
+├── .env.example
+└── README.md
 ```
 
 ## API Endpoints

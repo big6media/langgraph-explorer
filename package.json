@@ -7,13 +7,19 @@
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
-  "keywords": ["langgraph", "langchain", "ai", "agents"],
+  "keywords": [
+    "langgraph",
+    "langchain",
+    "ai",
+    "agents"
+  ],
   "author": "",
   "license": "MIT",
   "type": "module",
   "dependencies": {
     "@langchain/core": "^1.1.24",
     "@langchain/langgraph": "^1.1.4",
+    "@langchain/langgraph-cli": "^1.1.13",
     "@langchain/openai": "^1.2.7",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
